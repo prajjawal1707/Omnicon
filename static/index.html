@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OmniCon AI</title>
+<style>
+:root{--bg:#0a1020;--panel:#121c30;--panel2:#19263e;--line:#2a3a58;--txt:#edf3ff;--muted:#9aaac4;--accent:#9aabff;--green:#58d6a8;--amber:#f1c66b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.5 Inter,system-ui,Segoe UI,sans-serif}header{height:70px;padding:0 26px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);background:#0d1629;position:sticky;top:0}.brand{font-size:21px;font-weight:850}.brand b{color:var(--accent)}main{max-width:1250px;margin:28px auto;padding:0 20px}.hero{margin-bottom:22px}.eyebrow{color:var(--accent);font-size:11px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase}h1{font-size:30px;margin:5px 0}h2{font-size:17px;margin:0 0 14px}p,.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:17px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:19px;margin-bottom:17px}.wide{grid-column:1/-1}label{display:block;color:var(--muted);font-size:13px;margin:12px 0 6px}input,textarea{width:100%;padding:11px;border:1px solid var(--line);border-radius:9px;background:#0c1527;color:var(--txt);font:inherit}textarea{min-height:110px}button{border:0;border-radius:9px;padding:10px 15px;background:var(--accent);color:#111a32;font-weight:800;cursor:pointer}button.secondary{background:#2a3955;color:var(--txt)}button:disabled{opacity:.45}.actions{display:flex;gap:9px;margin-top:13px;flex-wrap:wrap}.agents{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.agent,.project{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:12px}.agent strong{display:block}.tiny{font-size:12px;color:var(--muted)}.tag{display:inline-block;padding:3px 8px;border-radius:20px;background:#263652;color:#d5e0f7;font-size:11px}.good{background:#143e36;color:var(--green)}.warn{background:#43381f;color:var(--amber)}.project{margin:8px 0;cursor:pointer}.project.active{border-color:var(--accent)}.task{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}.task:last-child{border:0}.task button{padding:6px 10px;font-size:12px}.task-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}.result-box{white-space:pre-wrap;max-height:65vh;overflow:auto;background:#0b1425;border:1px solid var(--line);padding:14px;border-radius:9px;font:13px/1.6 ui-monospace,monospace}dialog{max-width:850px;width:calc(100% - 30px);background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:14px;padding:20px}dialog::backdrop{background:#000b}.dialog-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}.logs{max-height:230px;overflow:auto;white-space:pre-wrap;font:12px/1.6 ui-monospace,monospace;color:#c4d0e6}.provider{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}.note{font-size:12px;color:#e7d7a5;background:#2b2517;border-left:3px solid var(--amber);padding:10px;border-radius:5px;margin-top:12px}@media(max-width:800px){.grid{grid-template-columns:1fr}.agents{grid-template-columns:1fr 1fr}.wide{grid-column:auto}}
+</style></head><body>
+<header><div class="brand">OmniCon <b>AI</b></div><div id="health" class="tiny">Starting…</div></header>
+<main><div class="hero"><div class="eyebrow">Provider-independent AI workforce · v1.1 developer reliability</div><h1>One project. Multiple AI engines.</h1><p class="muted">Route work across local models and supported hosted AI providers.</p></div>
+<div class="grid">
+<section>
+<div class="panel"><h2>Create a project</h2><label>Project name</label><input id="name" placeholder="My app / research / automation"><label>Project instructions</label><textarea id="prompt" placeholder="Describe what you want built, desired outcome, constraints and requirements…"></textarea><div class="actions"><button id="create">Create project</button><button class="secondary" id="refresh">Refresh</button></div><div class="note">Free local option: install Ollama and download a model. Hosted free tiers depend on each provider's current quotas and terms. This app does not automate consumer chat accounts or evade limits.</div></div>
+<div class="panel"><h2>Projects</h2><div id="projects" class="muted">Loading…</div></div>
+<div class="panel"><h2>Configured providers</h2><div id="providers" class="muted">Loading…</div></div>
+</section>
+<section>
+<div class="panel"><h2>Agent control room</h2><div id="agents" class="agents"></div></div>
+<div class="panel"><h2>Selected project</h2><div id="selected" class="muted">Select or create a project.</div><div class="actions"><button id="start" disabled>Start all agents</button><button class="secondary" id="resume" disabled>Resume paused work</button><button class="secondary" id="export" disabled>Export results (.md)</button></div><div style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px"><h2>VS Code workspace</h2><div id="workspace" class="muted">Select a project to see its folder.</div><div class="actions"><button class="secondary" id="copyWorkspace" disabled>Copy folder path</button>
+<button class="secondary" id="runTests" disabled>Run Python tests</button></div></div></div>
+<div class="panel"><h2>Task progress</h2><div id="tasks" class="muted">No project selected.</div></div>
+<div class="panel"><h2>Activity</h2><div id="events" class="logs">No activity.</div></div>
+</section></div></main>
+<dialog id="resultDialog"><div class="dialog-head"><h2 id="resultTitle">Agent result</h2><button class="secondary" id="closeResult">Close</button></div><div id="resultBody" class="result-box"></div></dialog>
+<script>
+let selected=null;const $=x=>document.getElementById(x);
+async function api(path,opts={}){let r=await fetch(path,{headers:{'Content-Type':'application/json'},...opts});if(!r.ok)throw Error(await r.text());return r.json()}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function refresh(){
+ try{
+ let h=await api('/api/health');$('health').textContent='● '+h.app+' · '+h.max_parallel_workers+' parallel workers';
+ let [agents,projects,providers]=await Promise.all([api('/api/agents'),api('/api/projects'),api('/api/providers')]);
+ $('agents').innerHTML=agents.map(a=>`<div class="agent"><strong>${esc(a.name)}</strong><div class="tiny">${esc(a.description)}</div><div style="margin-top:7px"><span class="tag">${esc(a.provider)}</span> <span class="tag ${a.status==='RUNNING'?'good':''}">${a.status}</span></div>${a.task?`<div class="tiny">${esc(a.task)}</div>`:''}</div>`).join('');
+ $('projects').innerHTML=projects.length?projects.map(p=>`<div class="project ${selected===p.id?'active':''}" data-id="${p.id}"><strong>${esc(p.name)}</strong><div class="tiny">${esc(p.status)} · ${new Date(p.updated_at).toLocaleString()}</div></div>`).join(''):'No projects yet.';
+ document.querySelectorAll('.project').forEach(e=>e.onclick=()=>select(e.dataset.id));
+ $('providers').innerHTML=providers.map(p=>`<div class="provider"><div><strong>${esc(p.id)}</strong><div class="tiny">${esc(p.type)} · ${esc(p.model||'model not set')}</div></div><span class="tag ${p.configured?'good':'warn'}">${p.configured?'Configured':'Needs setup'}</span></div>`).join('');
+ if(selected)await details();
+ }catch(e){$('health').textContent='Backend unavailable';console.error(e)}
+}
+async function select(id){selected=id;await refresh()}
+async function details(){
+ let p=await api('/api/projects/'+selected);
+ let ws=await api('/api/projects/'+selected+'/workspace');
+ $('workspace').innerHTML=`<div class="result-box" style="max-height:90px">${esc(ws.path)}</div><div class="tiny" style="margin-top:8px">${ws.files.length} file(s) currently saved</div>${ws.files.length?'<ul>'+ws.files.map(f=>`<li>${esc(f.path)}</li>`).join('')+'</ul>':'<p class="tiny">No generated files yet. Start the agents to let the Developer create files.</p>'}`;
+ $('copyWorkspace').disabled=false;
+ $('runTests').disabled=ws.files.length===0;
+ $('runTests').onclick=async()=>{if(!selected)return;const b=$('runTests');b.disabled=true;b.textContent='Running tests…';try{const r=await api('/api/projects/'+selected+'/run-tests',{method:'POST'});$('resultTitle').textContent='Python test results';$('resultBody').textContent=(r.ok?'PASS':'CHECK FAILED')+'\\n'+r.output+'\\n\\nWorkspace: '+(r.workspace||ws.path);$('resultDialog').showModal()}catch(e){alert(e.message)}finally{b.disabled=false;b.textContent='Run Python tests'}};
+ $('copyWorkspace').onclick=async()=>{try{await navigator.clipboard.writeText(ws.path);alert('Workspace folder path copied. In VS Code choose File → Open Folder and paste it.')}catch(e){alert('Copy was blocked by the browser. Select and copy the folder path above.')}};
+ $('selected').innerHTML=`<strong>${esc(p.name)}</strong> <span class="tag">${esc(p.status)}</span><p>${esc(p.prompt)}</p>`;
+ $('start').disabled=p.status==='RUNNING';$('resume').disabled=p.status==='RUNNING'||p.status==='COMPLETED';$('export').disabled=!p.tasks.some(t=>t.output||t.error);
+ $('tasks').innerHTML=p.tasks.map(t=>`<div class="task"><div><strong>${esc(t.title)}</strong><div class="tiny">${esc(t.agent)} · ${esc(t.error||'No error')}</div></div><div class="task-actions"><span class="tag ${t.status==='COMPLETED'?'good':t.status==='PAUSED'?'warn':''}">${esc(t.status)}</span><button class="secondary" data-task="${t.id}" ${t.output||t.error?'':'disabled'}>View result</button></div></div>`).join('');
+ document.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>{let t=p.tasks.find(x=>x.id===b.dataset.task);$('resultTitle').textContent=t.title+' — '+t.agent;$('resultBody').textContent=t.output||t.error||'No output yet.';$('resultDialog').showModal()});
+ $('events').textContent=p.events.slice().reverse().map(e=>`[${new Date(e.created_at).toLocaleTimeString()}] ${e.level.toUpperCase()} ${e.message}`).join('\\n')||'No activity';
+}
+$('create').onclick=async()=>{try{let n=$('name').value.trim(),p=$('prompt').value.trim();if(!n||!p)throw Error('Enter a project name and instructions.');let x=await api('/api/projects',{method:'POST',body:JSON.stringify({name:n,prompt:p})});selected=x.id;$('name').value='';await refresh()}catch(e){alert(e.message)}};
+$('start').onclick=async()=>{try{await api('/api/projects/'+selected+'/start',{method:'POST'});await refresh()}catch(e){alert(e.message)}};
+$('resume').onclick=async()=>{try{await api('/api/projects/'+selected+'/resume',{method:'POST'});await refresh()}catch(e){alert(e.message)}};
+$('export').onclick=()=>{if(selected)window.location.href='/api/projects/'+selected+'/export'};
+$('closeResult').onclick=()=>$('resultDialog').close();
+$('refresh').onclick=refresh;refresh();setInterval(refresh,2500);
+</script></body></html>

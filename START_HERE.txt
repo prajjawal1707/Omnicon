@@ -1,0 +1,14 @@
+OMNICON AI v1.1 — DEVELOPER RELIABILITY UPDATE
+
+UPGRADE:
+1. Stop the old server with Ctrl+C.
+2. Back up your old OmniCon folder.
+3. Extract this ZIP into C:\OmniCon_v1_1.
+4. Copy .env, data, and workspaces from the old folder into the new folder.
+5. Open the new folder in VS Code.
+6. VS Code > Terminal > New Terminal > run .\run.bat
+7. Open http://127.0.0.1:8765.
+8. Open your paused project and click Resume paused work.
+
+Keep the old folder until your project and files are verified.
+Read README.md for details.
